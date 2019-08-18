@@ -3,13 +3,17 @@ import logo from "../assets/logo.svg";
 import { Link } from "react-router-dom";
 import like from "../assets/like.svg";
 import dislike from "../assets/dislike.svg";
+import io from "socket.io-client";
 
 import api from "../services/api";
+
+import itsamatch from "../assets/itsamatch.png";
 
 import "./Main.css";
 
 export default function Main({ match }) {
   const [users, setUsers] = useState([]);
+  const [macthDev, setMatchDev] = useState(null);
 
   useEffect(() => {
     async function loadUsers() {
@@ -23,6 +27,16 @@ export default function Main({ match }) {
     }
 
     loadUsers();
+  }, [match.params.id]);
+
+  useEffect(() => {
+    const socket = io("http://localhost:3333", {
+      query: { user: match.params.id }
+    });
+
+    socket.on("match", dev => {
+      setMatchDev(dev);
+    });
   }, [match.params.id]);
 
   async function handleLike(id) {
@@ -73,6 +87,18 @@ export default function Main({ match }) {
         </ul>
       ) : (
         <div className="empty">Acabou :(</div>
+      )}
+
+      {macthDev && (
+        <div className="match-container">
+          <img src={itsamatch} alt="itsamatch" />
+          <img className="avatar" src={macthDev.avatar} alt="avatar" />
+          <strong>{macthDev.name}</strong>
+          <p>{macthDev.bio}</p>
+          <button type="button" onClick={() => setMatchDev(null)}>
+            Fechar
+          </button>
+        </div>
       )}
     </div>
   );
